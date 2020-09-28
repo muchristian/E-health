@@ -1,5 +1,3 @@
-'use strict';
-
 import fs from 'fs';
 import Sequelize from 'sequelize';
 import { basename as base, join } from 'path';
@@ -10,7 +8,6 @@ const env = process.env.NODE_ENV || 'development';
 const config = require('../config/config')[env];
 
 const sequelize = new Sequelize(config.database, config.username, config.password, config);
-
 
 fs
   .readdirSync(__dirname)
@@ -31,4 +28,4 @@ Object.keys(db).forEach(modelName => {
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
-module.exports = db;
+export default db;
