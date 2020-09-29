@@ -1,6 +1,8 @@
 import UserServices from "../services/UserService";
 import authUtils from "../utils/authUtil";
+import Validation from "../utils/Validation";
 const { hashPassword, isPasswordTrue, generateToken } = authUtils;
+const { SignupValidation } = Validation;
 export default class authController {
   static login = async (req, res) => {
     try {
@@ -25,44 +27,25 @@ export default class authController {
     }
   };
   static signup = async (req, res) => {
-    const { error } = validateUser(req.body);
+    const { error } = SignupValidation(req.body);
     if (error) {
       res.status(400).send(error.details);
     }
+
     try {
-      hashedpassword = await hashPassword(req.body.password);
+      const hashedPassword = await hashPassword(req.body.password);
       const user = {
-        firstname: req.body.firstname,
-        lastname: req.body.lastname,
-        phone: req.body.phone,
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        phoneNumber: req.body.phoneNumber,
         email: req.body.email,
-        password: hashedpassword,
+        password: hashedPassword,
       };
-      UserServices.saveAll(user);
+      await UserServices.saveAll(user);
       res.status(200).send("Account made :)");
     } catch (error) {
+      console.log(error);
       res.status(500).send("Internal error while hashing the password");
-    }
-
-    function validateUser(user) {
-      const schema = Joi.object({
-        firstname: Joi.string()
-          .regex(new RegExp("^([a-zA-Z]{3,})+$"))
-          .required(),
-        lastname: Joi.string()
-          .regex(new RegExp("^([a-zA-Z]{3,})+$"))
-          .required(),
-        phone: Joi.string().regex(new RegExp("^\\d{9}$")),
-        email: Joi.string().email(),
-        password: Joi.string()
-          .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,16}$/)
-          .required(),
-        confirmpassword: Joi.string().required().valid(Joi.ref("password")),
-      });
-      return schema.validate(user, {
-        abortEarly: false,
-        allowUnknown: true,
-      });
     }
   };
 }
